@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Comics"
+  },
+  {
+    "name": "Notebook"
+  },
+  {
+    "name": "Guide Book"
+  },
+  {
+    "name": "Adventure"
+  },
+
+  {
+    "name": "Classics"
+  },
+  {
+    "name": "Graphic Novel"
+  },
+  { "name": "Detective and Mystery" },
+  { "name": "Fantasy" },
+  { "name": "Historical Fiction" },
+  { "name": "Horror" },
+  { "name": "Literary Fiction" }
+]
