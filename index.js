@@ -70,6 +70,17 @@ try {
       .toArray();
     res.send({ category, data });
   });
+  /* ----------------------------- get users ----------------------------- */
+  app.get("/users", async (req, res) => {
+    const data = await userCollection
+      .find({ typeOfUser: req.query.role })
+      .toArray();
+    res.send(data);
+  });
+  app.delete("/user/:uid", async (req, res) => {
+    const result = await userCollection.deleteOne({ uid: req.params.uid });
+    res.send(result);
+  });
 } catch (error) {
   console.log(error);
 }
