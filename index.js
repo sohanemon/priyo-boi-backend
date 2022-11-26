@@ -45,6 +45,12 @@ try {
       .toArray();
     res.send(data);
   });
+  app.delete("/book/:id", async (req, res) => {
+    const result = await bookCollection.deleteOne({
+      _id: ObjectId(req.params.id),
+    });
+    res.send(result);
+  });
   app.get("/ad/:id", async (req, res) => {
     console.log(req.params.id);
     const data = await bookCollection.updateOne(
@@ -55,6 +61,15 @@ try {
     res.send(data);
   });
   /* ----------------------- get book by categories ---------------------- */
+  app.get("/books/category/:id", async (req, res) => {
+    const category = await categoryCollection.findOne({
+      _id: ObjectId(req.params.id),
+    });
+    const data = await bookCollection
+      .find({ category_id: req.params.id })
+      .toArray();
+    res.send({ category, data });
+  });
 } catch (error) {
   console.log(error);
 }
