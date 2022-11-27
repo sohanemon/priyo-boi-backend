@@ -71,7 +71,7 @@ try {
   });
   app.get("/ad", async (req, res) => {
     const data = await bookCollection
-      .find({ advertise: true })
+      .find({ advertise: true, available: true })
       .sort({ timestamp: -1 })
       .toArray();
     res.send(data);
@@ -88,7 +88,7 @@ try {
       _id: ObjectId(req.params.id),
     });
     const data = await bookCollection
-      .find({ category_id: req.params.id })
+      .find({ category_id: req.params.id, available: true })
       .toArray();
     res.send({ category, data });
   });
@@ -152,6 +152,14 @@ try {
         clientSecret: paymentIntent?.client_secret,
       });
     }
+  });
+  app.put("/payment-success/:book_id", async (req, res) => {
+    bookCollection
+      .updateOne(
+        { _id: ObjectId(req.params.book_id) },
+        { $set: { available: false } }
+      )
+      .then((_) => res.send(_));
   });
 } catch (error) {
   console.log(error);
