@@ -30,6 +30,15 @@ try {
     const user = await userCollection.findOne({ uid: req.params.uid });
     res.send(user);
   });
+  app.put("/user/:uid", async (req, res) => {
+    userCollection
+      .updateOne(
+        { uid: req.params.uid },
+        { $set: { verified: true } },
+        { upsert: true }
+      )
+      .then((_) => res.send(_));
+  });
   /* -------------------------- book categories -------------------------- */
   app.get("/categories", async (req, res) => {
     const data = await categoryCollection.find({}).toArray();
@@ -105,16 +114,16 @@ try {
   });
   /* --------------------- store and retrieve orders --------------------- */
   app.post("/order", async (req, res) => {
-    orderCollection.findOne({ book_id: req.body.book_id }).then((response) => {
-      if (response?.book_id) return res.status(400).send("Already available");
-      orderCollection
-        .insertOne({
-          ...req.body,
-          timestamp: new Timestamp(),
-        })
-        .then((result) => res.send(result));
-    });
+    // orderCollection.findOne({ book_id: req.body.book_id }).then((response) => {
+    //   if (response?.book_id) return res.status(400).send("Already available");
+    orderCollection
+      .insertOne({
+        ...req.body,
+        timestamp: new Timestamp(),
+      })
+      .then((result) => res.send(result));
   });
+  // });
   app.get("/order", async (req, res) => {
     const order = await orderCollection
       .find({ buyer: req.query.email })
