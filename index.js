@@ -19,13 +19,24 @@ const bookCollection = db.collection("books");
 const orderCollection = db.collection("orders");
 
 /* ------------------------- JSON web token JWT ------------------------ */
-const verifyJWT = (req, res, next) => {};
+
+const verifyJWT = (req, res, next) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).send("Unauthorized");
+  const token = auth.split(" ")[1];
+  jwt.verify(token, process.env.secret_key, (err, payload) => {
+    if (err) return res.status(401).send("Unauthorized");
+    else {
+      req.email = payload.email.email;
+      next();
+    }
+  });
+};
 
 /* --------------------------------------------------------------------- */
 try {
   app.post("/jwt", (req, res) => {
     const token = jwt.sign({ email: req.body }, process.env.secret_key);
-    console.log(token);
     res.send({ token });
   });
   app.post("/user", async (req, res) => {
@@ -108,7 +119,11 @@ try {
     res.send({ category, data });
   });
   /* ----------------------------- get users ----------------------------- */
-  app.get("/users", async (req, res) => {
+  app.post("/users", verifyJWT, async (req, res) => {
+    console.log(req.email, req.body.email);
+    if (req.email !== req.body.email) {
+      return res.status(403).send("Forbidden");
+    }
     const data = await userCollection
       .find({ typeOfUser: req.query.role })
       .toArray();
@@ -120,8 +135,6 @@ try {
   });
   /* --------------------- store and retrieve orders --------------------- */
   app.post("/order", async (req, res) => {
-    // orderCollection.findOne({ book_id: req.body.book_id }).then((response) => {
-    //   if (response?.book_id) return res.status(400).send("Already available");
     orderCollection
       .insertOne({
         ...req.body,
@@ -129,8 +142,10 @@ try {
       })
       .then((result) => res.send(result));
   });
-  // });
-  app.get("/order", async (req, res) => {
+  app.get("/order", verifyJWT, async (req, res) => {
+    if (req.email !== req.query.email) {
+      return res.status(403).send("Forbidden");
+    }
     const order = await orderCollection
       .find({ buyer: req.query.email })
       .toArray();
@@ -143,8 +158,10 @@ try {
     res.send(data);
   });
   /* ---------------------------- my wishlist ---------------------------- */
-  app.put("/wishlist", async (req, res) => {
-    console.log(req.query.email, req.body);
+  app.put("/wishlist", verifyJWT, async (req, res) => {
+    if (req.email !== req.query.email) {
+      return res.status(403).send("Forbidden");
+    }
     userCollection
       .updateOne(
         { email: req.query.email },
