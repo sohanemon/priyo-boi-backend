@@ -22,10 +22,10 @@ const orderCollection = db.collection("orders");
 
 const verifyJWT = (req, res, next) => {
   const auth = req.headers.authorization;
-  if (!auth) return res.status(401).send("Unauthorized");
+  if (!auth) return res.status(401).send("Unauthorized at 1st");
   const token = auth.split(" ")[1];
   jwt.verify(token, process.env.secret_key, (err, payload) => {
-    if (err) return res.status(401).send("Unauthorized");
+    if (err) return res.status(401).send("Unauthorized at 2nd");
     else {
       req.email = payload.email.email;
       next();
@@ -113,8 +113,21 @@ try {
     const category = await categoryCollection.findOne({
       _id: ObjectId(req.params.id),
     });
+    // const data = await bookCollection
+    //   .find({ category_id: req.params.id, available: true })
+    //   .toArray();
     const data = await bookCollection
-      .find({ category_id: req.params.id, available: true })
+      .aggregate([
+        { $match: { category_id: req.params.id, available: true } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "addedBy",
+            foreignField: "email",
+            as: "user",
+          },
+        },
+      ])
       .toArray();
     res.send({ category, data });
   });
