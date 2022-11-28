@@ -3,7 +3,7 @@ const express = require("express");
 const { MongoClient, Timestamp, ObjectId } = require("mongodb");
 const cors = require("cors");
 const stripe = require("stripe")(process.env.stripe_sk);
-
+const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 // middleware
@@ -17,10 +17,16 @@ const userCollection = db.collection("users");
 const categoryCollection = db.collection("bookCategories");
 const bookCollection = db.collection("books");
 const orderCollection = db.collection("orders");
+
+/* ------------------------- JSON web token JWT ------------------------ */
+const verifyJWT = (req, res, next) => {};
+
 /* --------------------------------------------------------------------- */
 try {
-  app.get("/", (req, res) => {
-    res.send("Data");
+  app.post("/jwt", (req, res) => {
+    const token = jwt.sign({ email: req.body }, process.env.secret_key);
+    console.log(token);
+    res.send({ token });
   });
   app.post("/user", async (req, res) => {
     const result = await userCollection.insertOne(req.body);
